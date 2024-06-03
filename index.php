@@ -11,5 +11,9 @@ const money_log = StorageDir . "log.json";
 
 $operations = new OperationRepository(money_log);
 $user_money = new UserMoneyRepository(money_file, $operations);
+
 $user_money->sendMoney(1, 2, 100);
+$user_money->fillUpMoney(1, 150);
+$user_money->cashOutMoney(2, 50);
+
 

@@ -47,7 +47,40 @@ use \Payment\OperationRepository;
         $receiverMoneyResult = $this->getMoneyValue($receiver) + $value;
         $this->setMoneyValue($receiver, $receiverMoneyResult);
 
-        $this->operations->Log(['from' => $sender, 'to' => $receiver, 'sum' => $value]);
+        $this->operations->Log(['from' => $sender, 'to' => $receiver, 'sum' => $value, 'type' => 'send']);
+        return true;
+    }
+
+    /**
+     * @param int $user
+     * @param int $value
+     * @return bool
+     */
+    public function fillUpMoney(int $user, int $value): bool
+    {
+        $userMoney = $this->getMoneyValue($user);
+        $this->setMoneyValue($user, $userMoney + $value);
+        $this->operations->Log(['user' => $user, 'value' => $value, 'type' => 'incoming']);
+
+        return true;
+    }
+
+    /**
+     * @param int $user
+     * @param int $value
+     * @return bool
+     */
+    public function cashOutMoney(int $user, int $value): bool
+    {
+        $userMoney = $this->getMoneyValue($user);
+        if ($userMoney < $value) {
+            return false;
+        }
+
+        $userMoneyResult = $userMoney - $value;
+        $this->setMoneyValue($user, $userMoneyResult);
+
+        $this->operations->Log(['user' => $user, 'value' => $value, 'type' => 'outcoming']);
         return true;
     }
 
