@@ -37,13 +37,16 @@ use \Payment\OperationRepository;
      */
     public function sendMoney(int $sender, int $receiver, int $value): bool
     {
-        $from_money = $this->getMoneyValue($sender);
-        if ($from_money < $value) {
+        $senderMoney = $this->getMoneyValue($sender);
+        if ($senderMoney < $value) {
             return false;
         }
-        $money_left = $from_money - $value;
-        $this->setMoneyValue($sender, $money_left);
-        $this->setMoneyValue($receiver, $value);
+        $senderMoneyResult = $senderMoney - $value;
+        $this->setMoneyValue($sender, $senderMoneyResult);
+
+        $receiverMoneyResult = $this->getMoneyValue($receiver) + $value;
+        $this->setMoneyValue($receiver, $receiverMoneyResult);
+
         $this->operations->Log(['from' => $sender, 'to' => $receiver, 'sum' => $value]);
         return true;
     }
