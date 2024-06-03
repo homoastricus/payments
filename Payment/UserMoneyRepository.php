@@ -3,7 +3,11 @@
 namespace Payment;
 
 use AllowDynamicProperties;
+use Payment\Operations\CashOutOperation;
+use Payment\Operations\FillUpOperation;
+use Payment\Operations\SendOperation;
 use \Payment\OperationRepository;
+use User\UserAccount;
 
 #[AllowDynamicProperties] class UserMoneyRepository extends Repository implements Payment
 {
@@ -29,6 +33,17 @@ use \Payment\OperationRepository;
         return $this->getData($user);
     }
 
+    public function getUserById(int $userId): ?UserAccount
+    {
+        $moneyValue = $this->getMoneyValue($userId);
+
+        if ($moneyValue === null) {
+            return null;
+        }
+
+        return new UserAccount($userId, $moneyValue);
+    }
+
     /**
      * @param int $sender
      * @param int $receiver
@@ -37,18 +52,22 @@ use \Payment\OperationRepository;
      */
     public function sendMoney(int $sender, int $receiver, int $value): bool
     {
-        $senderMoney = $this->getMoneyValue($sender);
-        if ($senderMoney < $value) {
+        $sender = $this->getUserById($sender);
+        $receiver = $this->getUserById($receiver);
+
+        if (empty($sender) || empty($receiver)) {
             return false;
         }
-        $senderMoneyResult = $senderMoney - $value;
-        $this->setMoneyValue($sender, $senderMoneyResult);
+        $operation = new SendOperation($sender,$receiver,$value);
 
-        $receiverMoneyResult = $this->getMoneyValue($receiver) + $value;
-        $this->setMoneyValue($receiver, $receiverMoneyResult);
-
-        $this->operations->Log(['from' => $sender, 'to' => $receiver, 'sum' => $value, 'type' => 'send']);
+        if (!$operation->execute()) {
+            return false;
+        }
+        $this->saveUserAccount($sender);
+        $this->saveUserAccount($receiver);
+        $this->operations->Log($operation);
         return true;
+
     }
 
     /**
@@ -58,9 +77,16 @@ use \Payment\OperationRepository;
      */
     public function fillUpMoney(int $user, int $value): bool
     {
-        $userMoney = $this->getMoneyValue($user);
-        $this->setMoneyValue($user, $userMoney + $value);
-        $this->operations->Log(['user' => $user, 'value' => $value, 'type' => 'incoming']);
+        $userAccount = $this->getUserById($user);
+
+        if (is_null($userAccount)) {
+            return false;
+        }
+        $operation = new FillUpOperation($userAccount,$value);
+        $operation->execute();
+
+        $this->saveUserAccount($userAccount);
+        $this->operations->Log($operation);
 
         return true;
     }
@@ -72,25 +98,28 @@ use \Payment\OperationRepository;
      */
     public function cashOutMoney(int $user, int $value): bool
     {
-        $userMoney = $this->getMoneyValue($user);
-        if ($userMoney < $value) {
+        $userAccount = $this->getUserById($user);
+        if (is_null($userAccount))
+        {
             return false;
         }
+        $operation = new CashOutOperation($userAccount,$value);
 
-        $userMoneyResult = $userMoney - $value;
-        $this->setMoneyValue($user, $userMoneyResult);
+        if (!$operation->execute()) {
+            return false;
+        }
+        $this->saveUserAccount($userAccount);
+        $this->operations->Log($operation);
 
-        $this->operations->Log(['user' => $user, 'value' => $value, 'type' => 'outcoming']);
         return true;
     }
 
     /**
-     * @param $user
-     * @param $value
+     * @param UserAccount $userAccount
      * @return void
      */
-    public function setMoneyValue($user, $value): void
+    public function saveUserAccount(UserAccount $userAccount): void
     {
-        $this->saveData($user, $value);
+        $this->saveData($userAccount->getId(), $userAccount->getMoneyValue());
     }
 }

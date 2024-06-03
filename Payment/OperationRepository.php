@@ -2,6 +2,7 @@
 namespace Payment;
 
 use AllowDynamicProperties;
+use Payment\Operations\OperationInterface;
 
 #[AllowDynamicProperties] class OperationRepository extends Repository implements LogOperation
 {
@@ -18,8 +19,9 @@ use AllowDynamicProperties;
      * @param array $operation
      * @return void
      */
-    public function Log(array $operation): void
+    public function Log(OperationInterface $operation): void
     {
+        $operation = $operation->toArray();
         $id = $this->newLogId();
         $operation['id'] = $id;
         $this->addData($operation);

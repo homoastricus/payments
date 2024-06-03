@@ -1,7 +1,9 @@
 <?php
 
 namespace Payment;
+use Payment\Operations\OperationInterface;
+
 interface LogOperation
 {
-    public function Log(array $operation);
+    public function Log(OperationInterface $operation);
 }
