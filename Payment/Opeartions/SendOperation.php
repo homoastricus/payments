@@ -4,8 +4,9 @@ namespace Payment\Operations;
 
 use User\UserAccount;
 
-class SendOperation implements OperationInterface
+class SendOperation extends AbstractOperation
 {
+    private ?int $id = null;
 
     public function __construct(
         private UserAccount $sender,
@@ -15,17 +16,27 @@ class SendOperation implements OperationInterface
     {
     }
 
-    public function execute(): bool
+    public function run(): bool
     {
-        $senderMoney = $this->sender->getMoneyValue();
+        return $this->send($this->sender, $this->receiver);
+    }
+
+    public function revert(): bool
+    {
+        return $this->send($this->receiver, $this->sender);
+    }
+
+    private function send(UserAccount $userA, UserAccount $userB): bool
+    {
+        $senderMoney = $userA->getMoneyValue();
         if ($senderMoney < $this->value) {
             return false;
         }
         $senderMoneyResult = $senderMoney - $this->value;
-        $this->sender->setMoneyValue($senderMoneyResult);
+        $userA->setMoneyValue($senderMoneyResult);
 
-        $receiverMoneyResult = $this->receiver->getMoneyValue() + $this->value;
-        $this->receiver->setMoneyValue($receiverMoneyResult);
+        $receiverMoneyResult = $userB->getMoneyValue() + $this->value;
+        $userB->setMoneyValue($receiverMoneyResult);
         return true;
     }
 
@@ -35,8 +46,16 @@ class SendOperation implements OperationInterface
             'from' => $this->sender->getId(),
             'to' => $this->receiver->getId(),
             'sum' => $this->value,
-            'type' => OperationTypes::SEND
+            'type' => OperationTypes::SEND,
+            'status' => $this->status
         ];
     }
 
+    public function getUserAccounts(): array
+    {
+        return [
+            $this->sender,
+            $this->receiver
+        ];
+    }
 }

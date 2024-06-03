@@ -17,11 +17,15 @@ use User\UserAccount;
      * @param $file
      * @param OperationRepository $operations
      */
-    public function __construct($file, OperationRepository $operations)
+    public function __construct($file)
     {
         $this->file = $file;
-        $this->operations = $operations;
         parent::__construct($file);
+    }
+
+    public function setOperationRepository(OperationRepository $operations)
+    {
+        $this->operations = $operations;
     }
 
     /**
