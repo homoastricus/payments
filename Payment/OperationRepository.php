@@ -202,4 +202,63 @@ use stdClass;
 
         return $isPending;
     }
+
+    public function getOperationsByDate(string $date): array
+    {
+        $logData = $this->readStorage();
+
+        $operations = [];
+        foreach ($logData as $logRecord) {
+            if ($logRecord->date == $date) {
+                $operations[] = $logRecord;
+            }
+        }
+
+        return $operations;
+    }
+
+    public function getOperationsSumByDate(?string $date): int
+    {
+        $logData = $this->readStorage();
+
+        $summ = 0;
+        foreach ($logData as $logRecord) {
+            if (
+                ($logRecord->type == OperationTypes::SEND
+                || $logRecord->type == OperationTypes::INCOMING
+                || $logRecord->type == OperationTypes::OUTCOMING)
+                && $this->wasOperationReverted($logRecord->id, $logData)
+            ) {
+
+                $summ += $this->getOperationValue((array)$logRecord);
+            }
+        }
+
+        return $summ;
+    }
+
+    private function wasOperationReverted(int $operationId, array $logData): bool
+    {
+        $wasReverted = false;
+
+        foreach ($logData as $logRecord) {
+            if ($logRecord->type == OperationTypes::REVERT
+                && $logRecord->parentOperationId == $operationId
+                && $logRecord->status == OperationStatuses::COMPLETED) {
+                $wasReverted = true;
+            }
+        }
+
+        return $wasReverted;
+    }
+
+    private function getOperationValue(array $operationData): int
+    {
+        $data = key_exists('sum', $operationData) ? $operationData['sum'] : 0;
+        $data = key_exists('value', $operationData) ? $operationData['value'] : $data;
+
+        return $data;
+    }
+
+
 }

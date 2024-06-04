@@ -29,7 +29,13 @@ abstract class AbstractOperation implements OperationInterface
         return $this->status = $status;
     }
 
-    abstract public function toArray(): array;
+    public function toArray(): array
+    {
+        return [
+            'date' => date('Y-m-d'),
+            'status' => $this->status,
+        ];
+    }
 
     public function execute(): bool
     {
@@ -44,4 +50,6 @@ abstract class AbstractOperation implements OperationInterface
     abstract public function revert(): bool;
 
     abstract protected function run();
+
+
 }

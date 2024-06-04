@@ -12,12 +12,13 @@ class FillUpOperation extends AbstractOperation
 
     public function toArray(): array
     {
-        return [
+        $info = [
             'userAccount' => $this->userAccount->getId(),
             'value' => $this->value,
             'type' => OperationTypes::INCOMING,
-            'status' => $this->status
         ];
+
+        return array_merge(parent::toArray(), $info);
     }
 
     public function run(): bool

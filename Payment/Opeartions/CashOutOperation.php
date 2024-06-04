@@ -12,12 +12,13 @@ class CashOutOperation extends AbstractOperation
 
     public function toArray(): array
     {
-        return [
+        $info = [
             'userAccount' => $this->userAccount->getId(),
             'value' => $this->value,
             'type' => OperationTypes::OUTCOMING,
-            'status' => $this->status
         ];
+
+        return array_merge(parent::toArray(), $info);
     }
 
     public function run(): bool

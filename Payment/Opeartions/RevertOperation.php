@@ -9,11 +9,12 @@ class RevertOperation extends AbstractOperation
     }
     public function toArray(): array
     {
-        return [
+        $info = [
             'parentOperationId' => $this->operation->getId(),
             'type' => OperationTypes::REVERT,
-            'status' => $this->status
         ];
+
+        return array_merge(parent::toArray(), $info);
     }
 
     public function run(): bool

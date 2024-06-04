@@ -51,13 +51,14 @@ class SendOperation extends AbstractOperation
 
     public function toArray(): array
     {
-        return [
+        $info = [
             'from' => $this->sender->getId(),
             'to' => $this->receiver->getId(),
             'sum' => $this->value,
             'type' => OperationTypes::SEND,
-            'status' => $this->status
         ];
+
+        return array_merge(parent::toArray(), $info);
     }
 
     public function getUserAccounts(): array
