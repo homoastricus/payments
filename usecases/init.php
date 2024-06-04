@@ -1,10 +1,10 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 use Payment\OperationRepository;
 use Payment\UserMoneyRepository;
 
-const StorageDir = __DIR__ . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR;
+const StorageDir = __DIR__ . DIRECTORY_SEPARATOR . "/../storage" . DIRECTORY_SEPARATOR;
 
 const money_file = StorageDir . "users.json";
 const money_log = StorageDir . "log.json";
@@ -13,9 +13,3 @@ $operations = new OperationRepository(money_log);
 $user_money = new UserMoneyRepository(money_file);
 $operations->setUserMoneyRepository($user_money);
 $user_money->setOperationRepository($operations);
-
-$user_money->sendMoney(1, 2, 100);
-$user_money->fillUpMoney(1, 150);
-$user_money->cashOutMoney(2, 50);
-
-

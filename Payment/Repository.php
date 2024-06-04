@@ -54,7 +54,7 @@ abstract class Repository
      */
     private function save($data): void
     {
-        $json = json_encode($data);
+        $json = json_encode($data, JSON_PRETTY_PRINT);
         file_put_contents($this->file, $json);
     }
 
