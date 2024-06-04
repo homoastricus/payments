@@ -5,11 +5,11 @@ use AllowDynamicProperties;
 use Payment\Operations\CashOutOperation;
 use Payment\Operations\FillUpOperation;
 use Payment\Operations\OperationInterface;
-use Payment\Operations\OperationsFactory;
+use Payment\Operations\OperationStatuses;
 use Payment\Operations\OperationTypes;
 use Payment\Operations\RevertOperation;
 use Payment\Operations\SendOperation;
-use User\UserAccount;
+use stdClass;
 
 #[AllowDynamicProperties] class OperationRepository extends Repository implements LogOperation
 {
@@ -57,9 +57,14 @@ use User\UserAccount;
         $userAccounts = $operation->getUserAccounts();
         foreach ($userAccounts as $account) {
             $this->userMoneyRepository->saveUserAccount($account);
+            $this->userMoneyRepository->setPendingOperations($account);
         }
 
         $this->log($operation);
+
+        foreach ($userAccounts as $account) {
+            $this->userMoneyRepository->tryRunPendingOperations($account);
+        }
     }
 
     private function getOperationById(int $operationId): OperationInterface
@@ -123,12 +128,78 @@ use User\UserAccount;
                 break;
 
             case OperationTypes::REVERT:
-                $operation = RevertOperation($this->getOperationById($operationData['parentOperationId']));
+                $operation = new RevertOperation($this->getOperationById($operationData['parentOperationId']));
                 $operation->setStatus($operationData['status']);
                 $operation->setId($operationData['id']);
                 break;
         }
 
         return $operation;
+    }
+
+    /**
+     * @param int $userId
+     * @return OperationInterface[]
+     */
+    public function getPendingOperationsByUserId(int $userId): array
+    {
+
+        echo 'Search Pending operations for user: '. $userId . PHP_EOL;
+        $logData = $this->readStorage();
+
+        $userOperationsData = [];
+
+        /** @var stdClass $logRecord */
+        foreach ($logData as $logRecord) {
+            if (
+                $this->isOperationRelatedToUser($userId, (array)$logRecord)
+                && $this->isPendingOperation($logRecord->id, $logData)
+            ) {
+                $userOperationsData[] = (array)$logRecord;
+            }
+        }
+
+        $pendingOperations = [];
+        $operationIds = '';
+        foreach ($userOperationsData as $operationData) {
+            $userAccounts = $this->getUserAccounts($operationData);
+            $pendingOperations[] = new RevertOperation($this->buildOperation($userAccounts, $operationData));
+            $operationIds .= ', ' . $operationData['id'];
+        }
+
+        echo "user $userId has " . count($pendingOperations)
+            . ' revert pending operations for ids:' . $operationIds .  PHP_EOL;
+
+        return $pendingOperations;
+    }
+
+    private function isOperationRelatedToUser(int $userId, array $operationData): bool
+    {
+        return
+            (key_exists('to', $operationData) && $operationData['to'] == $userId)
+            || (key_exists('userAccount', $operationData) && $operationData['userAccount'] == $userId);
+    }
+
+    private function isPendingOperation(int $operationId, array $logData): bool
+    {
+        $isPending = false;
+
+        foreach ($logData as $logRecord) {
+            if (
+                $logRecord->type == OperationTypes::REVERT
+                && $logRecord->parentOperationId == $operationId
+                && $logRecord->status == OperationStatuses::FAILED) {
+                $isPending = true;
+            }
+
+            if (
+                $logRecord->type == OperationTypes::REVERT
+                && $logRecord->parentOperationId == $operationId
+                && $logRecord->status == OperationStatuses::COMPLETED) {
+                $isPending = false;
+            }
+        }
+
+        return $isPending;
     }
 }

@@ -18,12 +18,15 @@ class RevertOperation extends AbstractOperation
 
     public function run(): bool
     {
-
+        echo 'Try revert operation: ' . $this->operation->getId() . PHP_EOL;
         return $this->operation->revert();
     }
 
     public function revert(): bool
     {
+        if ($this->operation->getStatus() != OperationStatuses::COMPLETED) {
+            return false;
+        }
         return $this->operation->execute();
     }
 

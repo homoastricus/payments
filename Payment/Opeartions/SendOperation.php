@@ -28,8 +28,15 @@ class SendOperation extends AbstractOperation
 
     private function send(UserAccount $userA, UserAccount $userB): bool
     {
+
+        echo 'Start ' . OperationTypes::SEND . ' operation.'
+            . ' FROM: ' . $this->sender->getId()
+            . ' TO: ' . $this->receiver->getId()
+            . ' Value: ' .$this->value . PHP_EOL;
+
         $senderMoney = $userA->getMoneyValue();
         if ($senderMoney < $this->value) {
+            echo 'Not enough money on account' . PHP_EOL;
             return false;
         }
         $senderMoneyResult = $senderMoney - $this->value;
@@ -37,6 +44,8 @@ class SendOperation extends AbstractOperation
 
         $receiverMoneyResult = $userB->getMoneyValue() + $this->value;
         $userB->setMoneyValue($receiverMoneyResult);
+
+        echo 'Finish ' . OperationTypes::INCOMING . ' operation.' . PHP_EOL;
         return true;
     }
 

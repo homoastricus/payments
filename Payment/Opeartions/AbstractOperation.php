@@ -2,6 +2,8 @@
 
 namespace Payment\Operations;
 
+use User\UserAccount;
+
 abstract class AbstractOperation implements OperationInterface
 {
     private ?int $id = null;

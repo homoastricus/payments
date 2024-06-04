@@ -48,6 +48,17 @@ use User\UserAccount;
         return new UserAccount($userId, $moneyValue);
     }
 
+    public function setPendingOperations(UserAccount $account): UserAccount
+    {
+        $pendingOperations = $this->operations->getPendingOperationsByUserId($account->getId());
+
+        foreach ($pendingOperations as $operation) {
+            $account->addPendingOperation($operation);
+        }
+
+        return $account;
+    }
+
     /**
      * @param int $sender
      * @param int $receiver
@@ -62,6 +73,7 @@ use User\UserAccount;
         if (empty($sender) || empty($receiver)) {
             return false;
         }
+
         $operation = new SendOperation($sender,$receiver,$value);
 
         if (!$operation->execute()) {
@@ -70,6 +82,10 @@ use User\UserAccount;
         $this->saveUserAccount($sender);
         $this->saveUserAccount($receiver);
         $this->operations->Log($operation);
+
+        $this->setPendingOperations($receiver);
+        $this->tryRunPendingOperations($receiver);
+
         return true;
 
     }
@@ -86,11 +102,15 @@ use User\UserAccount;
         if (is_null($userAccount)) {
             return false;
         }
+
         $operation = new FillUpOperation($userAccount,$value);
         $operation->execute();
 
         $this->saveUserAccount($userAccount);
         $this->operations->Log($operation);
+
+        $this->setPendingOperations($userAccount);
+        $this->tryRunPendingOperations($userAccount);
 
         return true;
     }
@@ -116,6 +136,25 @@ use User\UserAccount;
         $this->operations->Log($operation);
 
         return true;
+    }
+
+    /**
+     * @param UserAccount $userAccount
+     * @return void
+     */
+    public function tryRunPendingOperations(UserAccount $userAccount)
+    {
+        foreach ($userAccount->getPendingOperations() as $operation) {
+
+            if ($operation->execute()) {
+                $this->operations->log($operation);
+
+                $userAccounts = $operation->getUserAccounts();
+                foreach ($userAccounts as $userAccount) {
+                    $this->saveUserAccount($userAccount);
+                }
+            }
+        }
     }
 
     /**
