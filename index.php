@@ -1,15 +1,56 @@
 <?php
+
+/**
+ * Требуется сделать следующее:
+ * 1. Добавить типы операции (send - пересылка средств от пользователя к пользователю, метод уже работает,
+ * incoming - ввод средств на баланс пользователя, outcoming - вывод средств с баланса)
+ * 2. Добавить методы пополнения и вывода средств из системы в userRepository
+ * 3. Добавить возможность отмены операции (метод OperationRepository->revert($operation_id)).
+ * При этом учесть, что если для отмены операции не хватает средств пользователя, нужно как-то эту операцию поставить
+ * в обработку, и если из другой операции или пополнения приходят средства, то первым приоритетом обрабатывать метод revert
+ * 4. Добавить дату операции в лог операции и добавить метод в OperationRepository->getOperationsByDate($date)
+ * - возврат массива операций по дате,
+ * 5. также метод OperationRepository->getOperationSumByDate($date) - возвращает сумму по всем операциям за переданную
+ * дату либо сумму за все время если дата не задана
+ */
+
 require __DIR__ . '/vendor/autoload.php';
 
-use Payment\OperationRepository;
-use Payment\UserMoneyRepository;
+use Payment\Dto\IncomingDto;
+use Payment\Dto\OutcomingDto;
+use Payment\Dto\SendDto;
+use Payment\PaymentService;
+use Payment\Policies\PaymentPolicy;
+use Payment\Repositories\DebtRepository;
+use Payment\Repositories\PaymentRepository;
+use Payment\Repositories\UserRepository;
+use Payment\RepositoryService;
 
-const StorageDir = __DIR__ . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR;
+const STORAGE_DIR = __DIR__ . '/storage';
 
-const money_file = StorageDir . "users.json";
-const money_log = StorageDir . "log.json";
+$repositoryService = new RepositoryService(
+    new UserRepository(),
+    new PaymentRepository(),
+    new DebtRepository()
+);
+$paymentPolicy = new PaymentPolicy($repositoryService);
+$paymentService = new PaymentService($repositoryService, $paymentPolicy);
 
-$operations = new OperationRepository(money_log);
-$user_money = new UserMoneyRepository(money_file, $operations);
-$user_money->sendMoney(1, 2, 100);
 
+$inc1= $paymentService->incomingMoney(new IncomingDto(1, 20000));
+$res = $paymentService->sendMoney(new SendDto(1, 7, 10000));
+$res2 = $paymentService->sendMoney(new SendDto(7, 6,10000));
+$res3 = $paymentService->outcomingMoney(new OutcomingDto(6, 10000));
+$rev1 = $paymentService->revert($res->id);
+$rev2 = $paymentService->revert($res2->id);
+
+
+$inc2 = $paymentService->incomingMoney(new IncomingDto(6, 10000));
+$out1 = $paymentService->outcomingMoney(new OutcomingDto(1, 20000));
+
+
+$sum1 = $paymentService->getOperationsSumByDate();
+$sum2 = $paymentService->getOperationsSumByDate('05.06.2024');
+$op1 = $paymentService->getOperationsByDate('05.06.2024');
+
+var_dump(11);
