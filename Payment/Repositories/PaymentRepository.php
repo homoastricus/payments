@@ -2,27 +2,22 @@
 
 namespace Payment\Repositories;
 
-use DateTime;
-
 readonly class PaymentRepository extends AbstractRepository implements PaymentRepositoryInterface
 {
 
     private const PAYMENT_FILE = STORAGE_DIR . '/payments.json';
 
-    public function __construct()
+    protected function getFilePath(): string
     {
-        parent::__construct(self::PAYMENT_FILE);
+        return self::PAYMENT_FILE;
     }
 
     public function createOperation(array $operation): array
     {
-        $operation['id'] = $this->newId();
-        $operation['date'] = (new DateTime())->format(self::DATE_FORMAT);
-        $this->setData($operation['id'], $operation);
-        return $operation;
+        return $this->create($operation);
     }
 
-    public function getOperationById(int $operation_id): ?array
+    public function getOperationById(string $operation_id): ?array
     {
         return $this->getData($operation_id);
     }

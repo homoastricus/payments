@@ -7,7 +7,7 @@ use Payment\Models\User;
 interface UserRepositoryInterface extends RepositoryInterface
 {
 
-    public function getUserById(int $user_id): ?array;
+    public function getUserById(string $user_id): ?array;
 
     public function saveUser(User $user): void;
 

@@ -70,7 +70,7 @@ readonly class PaymentService
     }
 
     /** @throws AuthorizeException|Exception */
-    public function revert(int $operation_id): Send|Debt
+    public function revert(string $operation_id): Send|Debt
     {
         /** @var Send $send */
         $send = $this->repositoryService->getOperationById($operation_id);
@@ -85,7 +85,7 @@ readonly class PaymentService
     }
 
     /** @throws AuthorizeException|Exception */
-    private function debtRecovery(int $user_id): void
+    private function debtRecovery(string $user_id): void
     {
         $debts = $this->repositoryService->getDebtsByUserId($user_id);
         foreach ($debts as $debt) {

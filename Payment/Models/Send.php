@@ -9,13 +9,13 @@ class Send extends Payment
 {
 
     public function __construct(
-        public int    $id,
-        public int    $type,
-        public int    $sender_id,
-        public int    $receiver_id,
-        public int    $value,
-        public string $date,
-        public ?int   $revert_operation_id = null,
+        public string  $id,
+        public int     $type,
+        public string  $sender_id,
+        public string  $receiver_id,
+        public int     $value,
+        public string  $date,
+        public ?string $revert_operation_id = null,
     )
     {
     }

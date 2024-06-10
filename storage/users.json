@@ -1,1 +1,30 @@
-{"1":{"id":1,"balance":147},"2":{"id":2,"balance":620},"3":{"id":3,"balance":900},"4":{"id":4,"balance":178},"5":{"id":5,"balance":554},"6":{"id":6,"balance":220},"7":{"id":7,"balance":220}}
+{
+  "uniqid1": {
+    "id": "uniqid1",
+    "balance": 147
+  },
+  "uniqid2": {
+    "id": "uniqid2",
+    "balance": 620
+  },
+  "uniqid3": {
+    "id": "uniqid3",
+    "balance": 900
+  },
+  "uniqid4": {
+    "id": "uniqid4",
+    "balance": 178
+  },
+  "uniqid5": {
+    "id": "uniqid5",
+    "balance": 554
+  },
+  "uniqid6": {
+    "id": "uniqid6",
+    "balance": 220
+  },
+  "uniqid7": {
+    "id": "uniqid7",
+    "balance": 220
+  }
+}

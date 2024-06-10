@@ -83,7 +83,7 @@ readonly class RepositoryService
 //     * USERS
 //     */
     /** @throws Exception */
-    public function getUserByIdOrFail(int $user_id): User
+    public function getUserByIdOrFail(string $user_id): User
     {
         $user = $this->userRepository->getUserById($user_id);
         if (!$user) throw new Exception("Пользователя с id $user_id не существует");
@@ -94,7 +94,7 @@ readonly class RepositoryService
 //     * OPERATIONS
 //     */
     /** @throws Exception */
-    public function getOperationById(int $operation_id): Incoming|Outcoming|Send
+    public function getOperationById(string $operation_id): Incoming|Outcoming|Send
     {
         $operation = $this->paymentRepository->getOperationById($operation_id);
         return $this->operationToModel($operation);
@@ -139,17 +139,17 @@ readonly class RepositoryService
 //    /**
 //     * DEBT
 //     */
-    public function checkDebtByUserId(int $user_id): bool
+    public function checkDebtByUserId(string $user_id): bool
     {
         return (bool)$this->getDebtsByUserId($user_id);
     }
 
-    public function checkDebtByOperationId(int $operation_id): bool
+    public function checkDebtByOperationId(string $operation_id): bool
     {
         return (bool)$this->getDebtByOperationId($operation_id);
     }
 
-    public function getDebtByOperationId(int $operation_id): ?Debt
+    public function getDebtByOperationId(string $operation_id): ?Debt
     {
         $debts = $this->debtRepository->getDebts();
         foreach ($debts as $debt) {
@@ -161,7 +161,7 @@ readonly class RepositoryService
     }
 
     /** @return Debt[] */
-    public function getDebtsByUserId(int $user_id): array
+    public function getDebtsByUserId(string $user_id): array
     {
         $debts = [];
         foreach ($this->debtRepository->getDebts() as $debt) {
@@ -180,7 +180,7 @@ readonly class RepositoryService
     public function createDebt(Send $send): Debt
     {
         $debtDto = $send->createDebtDto();
-        $debt = $this->debtRepository->addDebt((array)$debtDto);
+        $debt = $this->debtRepository->createDebt((array)$debtDto);
         return new Debt(...$debt);
     }
 }

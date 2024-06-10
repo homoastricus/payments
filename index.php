@@ -37,20 +37,20 @@ $paymentPolicy = new PaymentPolicy($repositoryService);
 $paymentService = new PaymentService($repositoryService, $paymentPolicy);
 
 
-$inc1= $paymentService->incomingMoney(new IncomingDto(1, 20000));
-$res = $paymentService->sendMoney(new SendDto(1, 7, 10000));
-$res2 = $paymentService->sendMoney(new SendDto(7, 6,10000));
-$res3 = $paymentService->outcomingMoney(new OutcomingDto(6, 10000));
-$rev1 = $paymentService->revert($res->id);
-$rev2 = $paymentService->revert($res2->id);
+//$inc1= $paymentService->incomingMoney(new IncomingDto('uniqid1', 20000));
+//$res = $paymentService->sendMoney(new SendDto('uniqid1', 'uniqid7', 10000));
+//$res2 = $paymentService->sendMoney(new SendDto('uniqid7', 'uniqid6',10000));
+//$res3 = $paymentService->outcomingMoney(new OutcomingDto('uniqid6', 10000));
+//$rev1 = $paymentService->revert($res->id);
+//$rev2 = $paymentService->revert($res2->id);
 
 
-$inc2 = $paymentService->incomingMoney(new IncomingDto(6, 10000));
-$out1 = $paymentService->outcomingMoney(new OutcomingDto(1, 20000));
-
-
-$sum1 = $paymentService->getOperationsSumByDate();
-$sum2 = $paymentService->getOperationsSumByDate('05.06.2024');
-$op1 = $paymentService->getOperationsByDate('05.06.2024');
+$inc2 = $paymentService->incomingMoney(new IncomingDto('uniqid6', 10000));
+$out1 = $paymentService->outcomingMoney(new OutcomingDto('uniqid1', 20000));
+//
+//
+//$sum1 = $paymentService->getOperationsSumByDate();
+//$sum2 = $paymentService->getOperationsSumByDate('05.06.2024');
+//$op1 = $paymentService->getOperationsByDate('05.06.2024');
 
 var_dump(11);

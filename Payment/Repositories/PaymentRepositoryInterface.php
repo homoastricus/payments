@@ -11,5 +11,5 @@ interface PaymentRepositoryInterface extends RepositoryInterface
 
     public function saveOperation(array $operation): void;
 
-    public function getOperationById(int $operation_id): ?array;
+    public function getOperationById(string $operation_id): ?array;
 }

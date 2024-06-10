@@ -2,12 +2,19 @@
 
 namespace Payment\Repositories;
 
-abstract readonly class AbstractRepository
+use DateTime;
+
+abstract readonly class AbstractRepository implements RepositoryInterface
 {
 
-    public function __construct(private string $file)
+    private string $file;
+
+    public function __construct()
     {
+        $this->file = $this->getFilePath();
     }
+
+    abstract protected function getFilePath(): string;
 
     protected function readStorage(): array
     {
@@ -39,8 +46,16 @@ abstract readonly class AbstractRepository
         file_put_contents($this->file, json_encode($data));
     }
 
-    protected function newId(): int
+    protected function newId(): string
     {
-        return array_key_last($this->readStorage()) + 1;
+        return uniqid('', true);
+    }
+
+    protected function create(array $entity): array
+    {
+        $entity['date'] = (new DateTime())->format(self::DATE_FORMAT);
+        $entity['id'] = $this->newId();
+        $this->setData($entity['id'], $entity);
+        return $entity;
     }
 }

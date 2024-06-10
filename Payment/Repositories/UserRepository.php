@@ -9,12 +9,12 @@ readonly class UserRepository extends AbstractRepository implements UserReposito
 
     private const USER_FILE = STORAGE_DIR . '/users.json';
 
-    public function __construct()
+    protected function getFilePath(): string
     {
-        parent::__construct(self::USER_FILE);
+        return self::USER_FILE;
     }
 
-    public function getUserById(int $user_id): ?array
+    public function getUserById(string $user_id): ?array
     {
         return $this->getData($user_id);
     }
